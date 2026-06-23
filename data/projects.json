@@ -1,0 +1,52 @@
+[
+  {
+    "slug": "buffett-portfolio-tracker",
+    "title": "Buffett Portfolio Tracker",
+    "summary": "A live web dashboard tracking Berkshire Hathaway's 13F SEC filings, with automated GitHub Actions updates and GitHub Pages hosting. Built in Python with EDGAR API integration.",
+    "link": "https://github.com",
+    "github": "https://github.com",
+    "cover": "",
+    "tags": ["Python", "GitHub Actions", "SEC EDGAR"],
+    "pinned": true
+  },
+  {
+    "slug": "nestle-roommate-finder",
+    "title": "Nestle — Roommate Finder",
+    "summary": "An iOS app built in SwiftUI for finding compatible roommates. Features 12 screens, MVVM architecture, MapKit integration, and full dark mode support targeting iOS 16+.",
+    "link": "https://github.com",
+    "github": "https://github.com",
+    "cover": "",
+    "tags": ["SwiftUI", "MapKit", "iOS"],
+    "pinned": true
+  },
+  {
+    "slug": "pumpwatch",
+    "title": "PumpWatch",
+    "summary": "A crowdsourced gas price community reporting web app for the Bay Area. Anonymous, real-time reporting powered by Supabase backend and deployed on Vercel.",
+    "link": "https://github.com",
+    "github": "https://github.com",
+    "cover": "",
+    "tags": ["Supabase", "Vercel", "JavaScript"],
+    "pinned": false
+  },
+  {
+    "slug": "barkpark",
+    "title": "BarkPark",
+    "summary": "An iOS app for discovering dog parks in your area. Built in SwiftUI with location-based search, park ratings, and a clean map-driven browsing experience.",
+    "link": "https://github.com",
+    "github": "https://github.com",
+    "cover": "",
+    "tags": ["SwiftUI", "iOS", "CoreLocation"],
+    "pinned": false
+  },
+  {
+    "slug": "example-hidden-project",
+    "title": "Example Hidden Project",
+    "summary": "This project only appears after clicking 'View more' — demonstrating the expand behavior. Delete this entry or set it as one of your real projects.",
+    "link": "https://github.com",
+    "github": "",
+    "cover": "",
+    "tags": ["Example"],
+    "pinned": false
+  }
+]
