@@ -1,0 +1,42 @@
+[
+  {
+    "slug": "building-first-ios-app",
+    "title": "What I learned building my first iOS app from scratch",
+    "summary": "Lessons from going from zero to a published SwiftUI app — what the docs don't tell you about MVVM, Xcode quirks, and the surprisingly hard parts of building for mobile.",
+    "date": "2025-06-01",
+    "tags": ["iOS", "SwiftUI"],
+    "pinned": false
+  },
+  {
+    "slug": "transformers-for-product-people",
+    "title": "Understanding transformer architectures without a PhD",
+    "summary": "A product leader's working understanding of how large language models actually work — attention mechanisms, training pipelines, and what RAG means in practice vs. on a whiteboard.",
+    "date": "2025-05-10",
+    "tags": ["AI/ML", "LLMs"],
+    "pinned": false
+  },
+  {
+    "slug": "intelligent-investor-2025",
+    "title": "The Intelligent Investor, read in 2025",
+    "summary": "Benjamin Graham's framework still holds up. Notes on value investing principles, margin of safety, and what the Magnificent 7 would look like through Graham's eyes.",
+    "date": "2025-04-15",
+    "tags": ["Investing", "Books"],
+    "pinned": false
+  },
+  {
+    "slug": "neural-network-architectures",
+    "title": "A product person's guide to neural network architectures",
+    "summary": "Comparing Transformers, CNNs, RNNs, Diffusion models, and DLRMs — what each is actually good for, and how to think about them when evaluating AI products.",
+    "date": "2025-03-20",
+    "tags": ["AI/ML"],
+    "pinned": false
+  },
+  {
+    "slug": "example-hidden-post",
+    "title": "Example Hidden Post",
+    "summary": "This post only appears after clicking 'View more' — demonstrating the expand behavior. Delete this entry or replace it with one of your real posts.",
+    "date": "2025-02-01",
+    "tags": ["Example"],
+    "pinned": false
+  }
+]
