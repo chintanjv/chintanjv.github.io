@@ -202,7 +202,7 @@ a:hover { text-decoration: underline; }
   font-family: var(--font-sans);
   font-size: var(--text-sm);
   color: var(--color-muted);
-  padding: 6px 12px;
+  padding: 8px;
   border: 1px solid var(--color-border-mid);
   border-radius: var(--radius-sm);
   background: var(--color-surface);
