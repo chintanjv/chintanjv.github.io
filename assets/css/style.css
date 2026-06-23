@@ -433,17 +433,22 @@ a:hover { text-decoration: underline; }
 .detail-nav {
   padding: var(--space-sm) 0;
   margin-bottom: var(--space-xl);
-}
-.back-link {
-  font-family: var(--font-sans);
-  font-size: var(--text-sm);
-  color: var(--color-muted);
-  text-decoration: none;
+}.back-link {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid var(--color-border-mid);
+  background: var(--color-surface);
+  color: var(--color-muted);
+  text-decoration: none;
+  font-size: 16px;
+  line-height: 1;
+  transition: border-color 0.15s, color 0.15s;
 }
-.back-link:hover { color: var(--color-text); text-decoration: none; }
+.back-link:hover { border-color: #555; color: var(--color-text); text-decoration: none; }
 
 .detail-header { margin-bottom: var(--space-lg); }
 
