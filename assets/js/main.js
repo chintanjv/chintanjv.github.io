@@ -121,7 +121,6 @@ function buildThoughtItem(t) {
   const pin = t.pinned
     ? `<div class="thought-pin">${PIN_ICON} Pinned</div>`
     : '';
-  const tags = (t.tags || []).map(tag => `<span class="tag">${esc(tag)}</span>`).join('');
 
   return `
     <article class="thought-item">
@@ -129,7 +128,6 @@ function buildThoughtItem(t) {
       <p class="thought-date">${formatDate(t.date)}</p>
       <a href="thoughts/${esc(t.slug)}.html" class="thought-title">${esc(t.title)}</a>
       <p class="thought-summary">${esc(t.summary)}</p>
-      ${tags ? `<div class="thought-tags">${tags}</div>` : ''}
     </article>`;
 }
 
