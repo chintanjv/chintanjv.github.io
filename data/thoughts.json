@@ -11,7 +11,7 @@
     "slug": "building-first-ios-app",
     "title": "What I learned building my first iOS app from scratch",
     "summary": "Lessons from going from zero to a published SwiftUI app — what the docs don't tell you about MVVM, Xcode quirks, and the surprisingly hard parts of building for mobile.",
-    "date": "2025-06-01",
+    "date": "2026-06-01",
     "tags": ["iOS", "SwiftUI"],
     "pinned": false
   },
@@ -19,7 +19,7 @@
     "slug": "thoughts-on-agi-plus-ubi",
     "title": "Life 3.0, and thoughts on AGI + UBI",
     "summary": "Just some things that keep popping up in my head after reading Max Tegmark's Life 3.0 chapter 3",
-    "date": "2025-07-01",
+    "date": "2026-07-01",
     "tags": ["AGI", "ASI", "UBI"],
     "pinned": false
   }  
