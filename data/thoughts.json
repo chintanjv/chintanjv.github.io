@@ -14,5 +14,13 @@
     "date": "2025-06-01",
     "tags": ["iOS", "SwiftUI"],
     "pinned": false
-  }
+  },
+  {
+    "slug": "thoughts-on-agi-plus-ubi",
+    "title": "Life 3.0, and thoughts on AGI + UBI",
+    "summary": "Just some things that keep popping up in my head after reading Max Tegmark's Life 3.0 chapter 3",
+    "date": "2025-07-01",
+    "tags": ["AGI", "ASI", "UBI"],
+    "pinned": false
+  }  
 ]
