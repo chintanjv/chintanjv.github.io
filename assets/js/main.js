@@ -74,7 +74,6 @@ function buildProjectCard(p) {
   const pin = p.pinned
     ? `<div class="project-pin">${PIN_ICON} Pinned</div>`
     : '';
-  const tags = (p.tags || []).map(t => `<span class="tag">${esc(t)}</span>`).join('');
   const links = [
     p.link   && `<a href="${esc(p.link)}"   class="project-link" target="_blank" rel="noopener">View project ↗</a>`,
     p.github && p.github !== p.link
@@ -87,7 +86,6 @@ function buildProjectCard(p) {
       ${pin}
       <h3 class="project-title">${esc(p.title)}</h3>
       <p class="project-summary">${esc(p.summary)}</p>
-      ${tags ? `<div class="project-tags">${tags}</div>` : ''}
       <div class="project-links">${links}</div>
     </article>`;
 }
