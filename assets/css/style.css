@@ -234,6 +234,7 @@ a:hover { text-decoration: underline; }
   transition: border-color 0.15s;
   display: flex;
   flex-direction: column;
+  min-height: 230px;
 }
 .project-card:hover {
   border-color: var(--color-border-mid);
