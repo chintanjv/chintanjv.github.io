@@ -327,9 +327,16 @@ a:hover { text-decoration: underline; }
 }
 
 .thought-item {
-  padding: var(--space-sm) 0;
+  padding: var(--space-md) 0;
   border-bottom: 1px solid var(--color-border);
-  min-height: 130px;
+}
+
+.thought-item:first-child {
+  padding-top: 0;
+}
+
+.thought-item:last-child {
+  border-bottom: none;
 }
 .thought-item:first-child { padding-top: 0; }
 .thought-item:last-child { border-bottom: none; }
