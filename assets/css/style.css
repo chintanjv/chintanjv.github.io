@@ -6,24 +6,25 @@
 
 /* ---- TOKENS ---- */
 :root {
-  /* Structural colors */
+  /* Dark palette */
   --color-bg:         #0e0e0e;
   --color-surface:    #161616;
   --color-card-bg:    #1c1c1c;
   --color-border:     #262626;
   --color-border-mid: #333333;
 
-  /* Global content palette */
-  --color-heading:    #FFFFFF;
-  --color-muted:      #B0ACA6;
-  --color-accent:     #CD7C5E;
+  /* Text */
+  --color-text:       #e8e6e1;
+  --color-muted:      #888888;
+  --color-faint:      #555555;
+  --color-heading:    #f0ede8;
 
-  /* Backwards-compatible aliases */
-  --color-text:       var(--color-muted);
-  --color-faint:      var(--color-muted);
-  --color-tag-text:   var(--color-muted);
+  /* Accent — warm amber, not cold blue */
+  --color-accent:     #c8a96e;
+
+  /* Tags */
   --color-tag-bg:     #242424;
-}
+  --color-tag-text:   #888888;
 
   /* Fonts — swap these if you buy Tiempos Text + Söhne licenses */
   --font-serif: 'Lora', Georgia, 'Times New Roman', serif;
