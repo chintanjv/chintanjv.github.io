@@ -571,7 +571,7 @@ a:hover { text-decoration: underline; }
   font-family: var(--font-serif);
   font-size: var(--text-md);
   line-height: 1.9;
-  color: var(--color-heading);
+  color: #f0ede8;
   padding-bottom: var(--space-2xl);
 }
 .post-body p { margin-bottom: 1.4em; }
