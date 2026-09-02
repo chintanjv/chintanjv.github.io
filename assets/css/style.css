@@ -28,7 +28,7 @@
 
   /* Fonts — swap these if you buy Tiempos Text + Söhne licenses */
   --font-serif: 'Lora', Georgia, 'Times New Roman', serif;
-  --font-sans:  'DM Sans', system-ui, -apple-system, sans-serif;
+  --font-sans:  'Lora', Georgia, 'Times New Roman', serif;
 
   /* Type scale */
   --text-xs:   11px;
