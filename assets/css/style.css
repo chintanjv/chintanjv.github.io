@@ -96,7 +96,7 @@ a:hover { text-decoration: underline; }
   text-transform: none;
   color: var(--color-heading);
   margin-bottom: var(--space-md);
-  font-weight: 600;
+  font-weight: 400;
 }
 
 /* ---- NAV ---- */
