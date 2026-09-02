@@ -91,12 +91,12 @@ a:hover { text-decoration: underline; }
 
 .section-label {
   font-family: var(--font-sans);
-  font-size: var(--text-xs);
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--color-faint);
+  font-size: 22px;
+  letter-spacing: -0.01em;
+  text-transform: none;
+  color: var(--color-heading);
   margin-bottom: var(--space-md);
-  font-weight: 500;
+  font-weight: 600;
 }
 
 /* ---- NAV ---- */
