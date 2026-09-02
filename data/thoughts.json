@@ -1,5 +1,12 @@
 [
   {
+    "slug": "the-golden-age-of-builders",
+    "title": "The golden age of builders",
+    "summary": "Thoughts on building with AI",
+    "date": "2026-09-01",
+    "pinned": false
+  },
+  {
     "slug": "thoughts-on-agi-plus-ubi",
     "title": "Life 3.0, and thoughts on AGI + UBI",
     "summary": "Just some things that keep popping up in my head after reading Max Tegmark's Life 3.0 chapter 3",
