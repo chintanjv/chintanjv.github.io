@@ -140,7 +140,7 @@ a:hover { text-decoration: underline; }
 
 /* ---- PROFILE ---- */
 .profile {
-  padding: var(--space-2xl) 0 var(--space-xl);
+  padding: var(--space-2xl) 0 19px;
 }
 
 .profile-photo,
