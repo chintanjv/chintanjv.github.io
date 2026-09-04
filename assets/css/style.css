@@ -88,7 +88,6 @@ a:hover { text-decoration: underline; }
 
 .divider {
   border: none;
-  border-top: 1px solid var(--color-secondary);
 }
 
 .section-label {
@@ -329,7 +328,6 @@ a:hover { text-decoration: underline; }
 
 .thought-item {
   padding: var(--space-md) 0;
-  border-bottom: 1px solid var(--color-secondary);
 }
 
 .thought-item:first-child {
@@ -438,7 +436,6 @@ a:hover { text-decoration: underline; }
 }
 .overflow-list .thought-item:first-child {
   padding-top: var(--space-sm);
-  border-top: 1px solid var(--color-secondary);
 }
 
 /* ---- FOOTER ---- */
@@ -552,7 +549,6 @@ a:hover { text-decoration: underline; }
 .post-header {
   padding-top: var(--space-sm);
   padding-bottom: var(--space-md);
-  border-bottom: 1px solid var(--color-secondary);
   margin-bottom: var(--space-lg);
 }
 .post-title {
