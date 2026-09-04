@@ -317,8 +317,8 @@ a:hover { text-decoration: underline; }
 
 .project-link {
   font-family: var(--font-sans);
-  font-size: 12px;
-  color: var(--color-accent);
+  font-size: 15px;
+  color: #FFFFFF;
   text-decoration: none;
   display: inline-flex;
   align-items: center;
