@@ -218,6 +218,12 @@ a:hover { text-decoration: underline; }
 .section {
   padding: var(--space-xl) 0;
 }
+#projects {
+  padding-bottom: 19px;
+}
+.section-label {
+  ...
+}
 
 /* ---- PROJECTS GRID ---- */
 .projects-grid {
@@ -620,7 +626,7 @@ a:hover { text-decoration: underline; }
    RESPONSIVE
    ============================================================ */
 @media (max-width: 560px) {
-  .profile { padding: var(--space-xl) 0 var(--space-lg); }
+  .profile { padding: var(--space-xl) 0 19px; }
   .profile-name { font-size: var(--text-2xl); }
   .projects-grid { grid-template-columns: 1fr; }
   .nav-links { gap: var(--space-sm); }
