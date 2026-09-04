@@ -75,7 +75,7 @@ function buildProjectCard(p) {
     ? `<div class="project-pin">${PIN_ICON} Pinned</div>`
     : '';
   const links = [
-    p.link && `<a href="${esc(p.link)}" class="project-link" target="_blank" rel="noopener">View project ↗️</a>`,
+    p.link && `<a href="${esc(p.link)}" class="project-link" target="_blank" rel="noopener">View project</a>`,
     p.github && p.github !== p.link
              && `<a href="${esc(p.github)}" class="project-link" target="_blank" rel="noopener">GitHub ↗</a>`
   ].filter(Boolean).join('');
