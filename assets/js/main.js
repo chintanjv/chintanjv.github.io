@@ -68,25 +68,15 @@ function setupToggle(btnId, panelId, wrapId) {
 
 /* ---- RENDER PROJECTS ---- */
 function buildProjectCard(p) {
-  const cover = p.cover
-    ? `<img src="${esc(p.cover)}" alt="${esc(p.title)}" class="project-cover" loading="lazy">`
-    : '';
   const pin = p.pinned
-    ? `<div class="project-pin">${PIN_ICON} Pinned</div>`
+    ? `<div class="thought-pin">${PIN_ICON} Pinned</div>`
     : '';
-  const links = [
-    p.link && `<a href="${esc(p.link)}" class="project-link" target="_blank" rel="noopener">View project</a>`,
-    p.github && p.github !== p.link
-             && `<a href="${esc(p.github)}" class="project-link" target="_blank" rel="noopener">GitHub ↗</a>`
-  ].filter(Boolean).join('');
 
   return `
-    <article class="project-card">
-      ${cover}
+    <article class="thought-item">
       ${pin}
-      <h3 class="project-title">${esc(p.title)}</h3>
-      <p class="project-summary">${esc(p.summary)}</p>
-      <div class="project-links">${links}</div>
+      <a href="${esc(p.link)}" class="thought-title" target="_blank" rel="noopener">${esc(p.title)}</a>
+      <p class="thought-summary">${esc(p.summary)}</p>
     </article>`;
 }
 
