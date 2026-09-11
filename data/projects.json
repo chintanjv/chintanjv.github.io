@@ -1,5 +1,14 @@
 [
   {
+    "slug": "incidents-fyi",
+    "title": "Incidents.fyi",
+    "summary": "A location-based platform for reporting and browsing incidents happening in your neighborhood — think levels.fyi, but for real-world local incidents instead of comp data. Built with Next.js, Supabase/PostGIS, and MapLibre for live incident mapping.",
+    "link": "https://incidents-43udagxl1-chintanjvs-projects.vercel.app/",
+    "cover": "",
+    "tags": ["Next.js", "Supabase", "MapLibre"],
+    "pinned": false
+  },
+  {
     "slug": "buffett-portfolio-tracker",
     "title": "Buffett Portfolio Tracker",
     "summary": "A live web dashboard tracking Berkshire Hathaway's 13F SEC filings, with automated GitHub Actions updates and GitHub Pages hosting. Built in Python with EDGAR API integration.",
