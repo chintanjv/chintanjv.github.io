@@ -2,7 +2,7 @@
   {
     "slug": "incidents-fyi",
     "title": "Incidents.fyi",
-    "summary": "A location-based platform for reporting and browsing incidents happening in your neighborhood — think levels.fyi, but for real-world local incidents instead of comp data. Built with Next.js, Supabase/PostGIS, and MapLibre for live incident mapping.",
+    "summary": "A location-based platform for reporting and browsing incidents happening in your neighborhood. Think levels.fyi, but for real-world local incidents instead of comp data.",
     "link": "https://incidents-43udagxl1-chintanjvs-projects.vercel.app/",
     "cover": "",
     "tags": ["Next.js", "Supabase", "MapLibre"],
