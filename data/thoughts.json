@@ -1,0 +1,26 @@
+[
+  {
+    "slug": "the-age-of-builders",
+    "title": "The golden age of builders",
+    "summary": "Thoughts on building with AI",
+    "date": "2026-09-01"
+  },
+  {
+    "slug": "thoughts-on-agi-plus-ubi",
+    "title": "Life 3.0, and thoughts on AGI + UBI",
+    "summary": "Just some things that keep popping up in my head after reading Max Tegmark's Life 3.0 chapter 3",
+    "date": "2026-07-01"
+  },
+  {
+    "slug": "hello-world",
+    "title": "Hello World!",
+    "summary": "Welcome to my first blog!",
+    "date": "2026-06-22"
+  },
+  {
+    "slug": "building-first-ios-app",
+    "title": "What I learned building my first iOS app from scratch",
+    "summary": "Lessons from going from zero to a published SwiftUI app — what the docs don't tell you about MVVM, Xcode quirks, and the surprisingly hard parts of building for mobile.",
+    "date": "2026-06-01"
+  }
+]

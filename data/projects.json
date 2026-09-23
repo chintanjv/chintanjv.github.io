@@ -1,0 +1,22 @@
+[
+  {
+    "title": "Incidents.fyi",
+    "summary": "A location-based platform for reporting and browsing incidents happening in your neighborhood. Think levels.fyi, but for real-world local incidents instead of comp data.",
+    "link": "https://incidents-fyi.vercel.app/"
+  },
+  {
+    "title": "Buffett Portfolio Tracker",
+    "summary": "A live web dashboard tracking Berkshire Hathaway's 13F SEC filings, with automated GitHub Actions updates and GitHub Pages hosting. Built in Python with EDGAR API integration.",
+    "link": "https://github.com/chintanjv/buffett-tracker"
+  },
+  {
+    "title": "Nestle — Roommate Finder",
+    "summary": "An iOS app built in SwiftUI for finding compatible roommates. Features 12 screens, MVVM architecture, MapKit integration, and full dark mode support targeting iOS 16+.",
+    "link": "https://github.com/chintanjv/nestle"
+  },
+  {
+    "title": "BarkPark",
+    "summary": "An iOS app for discovering dog parks in your area. Built in SwiftUI with location-based search, park ratings, and a clean map-driven browsing experience.",
+    "link": "https://github.com/chintanjv/BarkPark"
+  }
+]
