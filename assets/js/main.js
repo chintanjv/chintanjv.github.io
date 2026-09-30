@@ -1,7 +1,5 @@
 /* main.js — renders data/projects.json + data/thoughts.json */
 
-document.getElementById('year').textContent = new Date().getFullYear();
-
 function esc(str) {
   return String(str)
     .replace(/&/g, '&amp;')
