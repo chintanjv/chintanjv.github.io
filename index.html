@@ -37,7 +37,11 @@
 
       <!-- ===================== PROFILE ===================== -->
       <section class="profile" aria-label="Profile">
-        <img src="assets/images/profile.jpeg" alt="Photo of Chintan Vaghela" class="profile-photo" width="88" height="88">
+        <picture>
+          <source srcset="assets/images/profile.avif" type="image/avif">
+          <source srcset="assets/images/profile.webp" type="image/webp">
+          <img src="assets/images/profile.jpeg" alt="Photo of Chintan Vaghela" class="profile-photo" width="88" height="88" fetchpriority="high">
+        </picture>
 
         <h1 class="profile-name">Chintan Vaghela</h1>
 
