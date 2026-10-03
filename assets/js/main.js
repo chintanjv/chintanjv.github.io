@@ -56,3 +56,18 @@ Promise.all([
     scrollToSection(id);
   }
 });
+
+/* Nav "?": lazy-loads the rooftop game (assets/js/game.js) on first hover or click */
+const playBtn = document.querySelector('.nav-play');
+let gameLoad = null;
+function loadGame() {
+  return gameLoad ??= new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = 'assets/js/game.js';
+    s.onload = () => resolve(window.RooftopGame);
+    s.onerror = () => { gameLoad = null; s.remove(); reject(); };
+    document.head.appendChild(s);
+  });
+}
+playBtn?.addEventListener('pointerenter', () => loadGame().catch(() => {}), { once: true });
+playBtn?.addEventListener('click', () => loadGame().then(g => g.open()).catch(() => {}));
