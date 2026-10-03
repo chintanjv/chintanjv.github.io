@@ -2,6 +2,15 @@
    style.css — dark theme, Lora throughout
    ============================================================ */
 
+/* ---- FONT (self-hosted Lora, latin subset, variable 400–700; SIL Open Font License) ---- */
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url('../fonts/lora-latin.woff2') format('woff2');
+}
+
 /* ---- TOKENS ---- */
 :root {
   /* Surfaces */
@@ -137,83 +146,8 @@ a { text-decoration: none; }
   96%           { transform: translateY(-2px); }
 }
 
-/* ---- GAME DIALOG ---- */
-.game {
-  width: min(760px, calc(100vw - 32px));
-  max-width: none;
-  max-height: calc(100dvh - 32px);
-  margin: auto;
-  padding: 0;
-  overflow: hidden;
-  color: var(--color-text);
-  background: var(--color-surface);
-  border: 1px solid var(--color-border-mid);
-  border-radius: var(--radius-sm);
-  -webkit-user-select: none;
-  user-select: none;
-  -webkit-touch-callout: none;
-}
-.game[open] { animation: game-in 0.18s ease-out; }
-.game::backdrop {
-  background: rgba(0, 0, 0, 0.7);
-  -webkit-backdrop-filter: blur(3px);
-  backdrop-filter: blur(3px);
-}
-@keyframes game-in {
-  from { opacity: 0; transform: translateY(6px); }
-}
-
-.game-bar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px 12px 10px 16px;
-  font-size: var(--text-sm);
-  color: var(--color-muted);
-}
-.game-bar-right { display: flex; align-items: center; gap: var(--space-sm); }
-.game-num { color: var(--color-heading); font-variant-numeric: tabular-nums; }
-
-.game-close {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  font: inherit;
-  font-size: var(--text-sm);
-  line-height: 1;
-  color: var(--color-secondary);
-  background: var(--color-surface);
-  border: 1px solid var(--color-border-mid);
-  border-radius: 50%;
-  cursor: pointer;
-  transition: border-color 0.15s, color 0.15s;
-}
-.game-close:hover,
-.game-close:focus-visible { border-color: var(--color-heading); color: var(--color-heading); outline: none; }
-
-.game-canvas {
-  display: block;
-  width: 100%;
-  aspect-ratio: 3 / 1;
-  min-height: 170px;
-  max-height: calc(100dvh - 140px);
-  background: var(--color-bg);
-  touch-action: none;
-  cursor: pointer;
-  outline: none;
-}
-
-.game-hint {
-  padding: 10px 16px 12px;
-  font-size: 12px;
-  text-align: center;
-  color: var(--color-muted);
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .nav-play svg, .game[open] { animation: none; }
+  .nav-play svg { animation: none; }
 }
 
 /* ---- PROFILE ---- */
@@ -384,7 +318,6 @@ a { text-decoration: none; }
   .profile-name { font-size: var(--text-2xl); }
   .nav-links { gap: var(--space-sm); }
   .post-title { font-size: var(--text-xl); }
-  .game-canvas { aspect-ratio: 2 / 1; }
 }
 
 /* Very small phones: make room for the "?" so the nav stays on one line */

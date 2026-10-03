@@ -85,6 +85,7 @@
 
   function reset() {
     const first = { x: -300, w: 300 + SPEED_START * 3.5, top: 140, seed: 1, hurdles: [], vIn: SPEED_START };
+    addWindows(first);
     first.vEdge = edgeSpeed(first, SPEED_START);
     buildings = [first];
     mails = [];
@@ -145,7 +146,18 @@
       if (m >= MAIL_AT && w > vt * 2 && Math.random() < 0.45) b.mailMeet = b.x + w * rand(0.3, 0.5);
     }
     b.vEdge = edgeSpeed(b, vIn);
+    addWindows(b);
     buildings.push(b);
+  }
+
+  // Which windows are lit, decided once per building: bit r of win[c] = row r of column c
+  function addWindows(b) {
+    b.win = [];
+    for (let c = 0; c <= (b.w - 14) / 14; c++) {
+      let mask = 0;
+      for (let r = 0; r < 7; r++) if (hash(b.seed + c * 7.13 + r * 3.7) > 0.55) mask |= 1 << r;
+      b.win.push(mask);
+    }
   }
 
   function fill() {
@@ -238,13 +250,13 @@
       e.y = e.base + Math.sin(e.t * 5) * 2;
       if (state === 'running' && hits(e)) trip(e);
     }
-    mails = mails.filter(e => e.x > px - viewW && e.y < FLOOR + 40);
+    for (let i = mails.length - 1; i >= 0; i--) if (mails[i].x < px - viewW || mails[i].y > FLOOR + 40) mails.splice(i, 1);
 
     // Milestones + score
     const m = Math.floor(px / UNITS_PER_M);
     if (state === 'running' && m >= milestone(mIdx)[0]) {
-      const [, text, sub] = milestone(mIdx++);
-      toast = { text, sub, t: 0, life: sub ? 2.6 : 1.8 };
+      const [, title, sub] = milestone(mIdx++);
+      toast = { title, sub, t: 0, life: sub ? 2.6 : 1.8 };
     }
     if (m !== shownM && m >= 0) { shownM = m; ui.score.textContent = m + 'm'; }
 
@@ -279,7 +291,7 @@
 
   function gameOver() {
     if (state === 'running') quip = pick(lastRoof && lastRoof.crumble ? QUIPS.legacy : QUIPS.fall);
-    state = 'over'; overT = 0;
+    state = 'over'; overT = 0; toast = null;
     prevPx = px; prevY = y;
     const m = Math.max(0, Math.floor(px / UNITS_PER_M));
     if (m > best) {
@@ -292,9 +304,11 @@
   /* ---- INPUT ---- */
   function press() {
     held = true;
-    if (state === 'ready' || state === 'paused') { state = 'running'; return; }
-    if (state === 'over') { if (overT > 0.4) { reset(); state = 'running'; } return; }
-    buffer = BUFFER;
+    if (state === 'running') { buffer = BUFFER; return; }
+    if (state === 'over') { if (overT <= 0.4) return; reset(); }
+    if (state === 'dying') return;
+    state = 'running';
+    start();
   }
   function release() { held = false; }
 
@@ -311,8 +325,10 @@
   }
 
   // Text in CSS-pixel coordinates, in the site's font
+  let font = '';
   function text(str, x, y, size, color) {
-    ctx.font = `${size * dpr}px Lora, Georgia, serif`;
+    const f = `${size * dpr}px Lora, Georgia, serif`;
+    if (f !== font) ctx.font = font = f;
     ctx.fillStyle = color;
     ctx.fillText(str, x * dpr, y * dpr);
   }
@@ -325,6 +341,7 @@
   // Pixel sprite at a world position. `from` skips top rows (growing vines); `rot` tumbles it.
   function sprite(rows, x, y, { flip = false, rot = 0, lit = true, from = 0 } = {}) {
     const cols = rows[0].length, w = cols * PX, h = (rows.length - from) * PX;
+    let cur = null;   // only touch ctx.fillStyle when the color changes
     if (rot) {
       ctx.save();
       ctx.translate((x + w / 2 - camX) * s, (y + h / 2 - viewTop) * s);
@@ -334,7 +351,8 @@
       for (let c = 0; c < cols; c++) {
         const ch = rows[r][flip ? cols - 1 - c : c];
         if (ch === '.' || (ch === '*' && !lit)) continue;
-        ctx.fillStyle = ch === '#' ? C.accent : lit ? C.player : C.bg;
+        const col = ch === '#' ? C.accent : lit ? C.player : C.bg;
+        if (col !== cur) ctx.fillStyle = cur = col;
         if (rot) ctx.fillRect((c * PX - w / 2) * s, ((r - from) * PX - h / 2) * s, PX * s, PX * s);
         else rect(x + c * PX, y + (r - from) * PX, PX, PX);
       }
@@ -379,10 +397,11 @@
       ctx.fillStyle = C.window;
       ctx.globalAlpha = 0.4;
       const c0 = Math.max(0, Math.floor((camX - b.x) / 14) - 1);
-      const c1 = Math.min(Math.floor((b.w - 14) / 14), Math.ceil((camX + viewW - b.x) / 14));
+      const c1 = Math.min(b.win.length - 1, Math.ceil((camX + viewW - b.x) / 14));
       for (let c = c0; c <= c1; c++) {
-        for (let r = 0, wy = b.top + 12; wy < FLOOR; r++, wy += 16) {
-          if (hash(b.seed + c * 7.13 + r * 3.7) > 0.55) rect(b.x + 8 + c * 14, wy, 6, 8);
+        const mask = b.win[c];
+        for (let r = 0, wy = b.top + 12; mask >> r && wy < FLOOR; r++, wy += 16) {
+          if (mask & 1 << r) rect(b.x + 8 + c * 14, wy, 6, 8);
         }
       }
       ctx.globalAlpha = 1;
@@ -416,19 +435,19 @@
     }
 
     // Runner
-    const frame = !onGround && state !== 'ready' ? SPRITES.jump
+    const pose = !onGround && state !== 'ready' ? SPRITES.jump
                 : state === 'running' ? (Math.floor(animT / 14) % 2 ? SPRITES.runA : SPRITES.runB)
                 : SPRITES.runB;
     ctx.fillStyle = C.player;
-    for (let r = 0; r < frame.length; r++) {
-      for (let c = 0; c < 7; c++) if (frame[r][c] === '#') rect(ix + c * PX, iy + r * PX, PX, PX);
+    for (let r = 0; r < pose.length; r++) {
+      for (let c = 0; c < 7; c++) if (pose[r][c] === '#') rect(ix + c * PX, iy + r * PX, PX, PX);
     }
 
     // Milestone toast (with a second line when it unlocks something new)
     if (toast) {
       const fadeOut = toast.life - 0.4;
       ctx.globalAlpha = toast.t < 0.2 ? toast.t / 0.2 : toast.t > fadeOut ? Math.max(0, (toast.life - toast.t) / 0.4) : 1;
-      text(toast.text, cssW / 2, 34, 16, C.accent);
+      text(toast.title, cssW / 2, 34, 16, C.accent);
       if (toast.sub) text(toast.sub, cssW / 2, 54, 12, C.secondary);
       ctx.globalAlpha = 1;
     }
@@ -467,6 +486,7 @@
     last = now;
     while (acc >= STEP) { update(STEP); acc -= STEP; }
     render(state === 'running' || state === 'dying' ? acc / STEP : 1);
+    if (state === 'ready' || state === 'paused' || (state === 'over' && overT > 0.4)) stop();
   }
   function start() { if (!raf) { last = performance.now(); acc = 0; raf = requestAnimationFrame(frame); } }
   function stop() { cancelAnimationFrame(raf); raf = 0; }
@@ -482,11 +502,38 @@
     viewTop = FLOOR - viewH;                                // extra room goes to the sky
     s = scale * dpr;
     ctx.textAlign = 'center';   // resizing the canvas resets context state
+    font = '';
     if (buildings) { fill(); render(1); }
   }
 
   /* ---- DIALOG ---- */
+  // Dialog styles live here (not style.css) so nobody downloads them until they play. Site tokens only.
+  const CSS = `
+.game { width: min(760px, calc(100vw - 32px)); max-width: none; max-height: calc(100dvh - 32px); margin: auto; padding: 0;
+  overflow: hidden; color: var(--color-text); background: var(--color-surface); border: 1px solid var(--color-border-mid);
+  border-radius: var(--radius-sm); -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+.game[open] { animation: game-in 0.18s ease-out; }
+.game::backdrop { background: rgba(0, 0, 0, 0.7); -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px); }
+@keyframes game-in { from { opacity: 0; transform: translateY(6px); } }
+.game-bar { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px 10px 16px;
+  font-size: var(--text-sm); color: var(--color-muted); }
+.game-bar-right { display: flex; align-items: center; gap: var(--space-sm); }
+.game-num { color: var(--color-heading); font-variant-numeric: tabular-nums; }
+.game-close { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; font: inherit;
+  font-size: var(--text-sm); line-height: 1; color: var(--color-secondary); background: var(--color-surface);
+  border: 1px solid var(--color-border-mid); border-radius: 50%; cursor: pointer; transition: border-color 0.15s, color 0.15s; }
+.game-close:hover, .game-close:focus-visible { border-color: var(--color-heading); color: var(--color-heading); outline: none; }
+.game-canvas { display: block; width: 100%; aspect-ratio: 3 / 1; min-height: 170px; max-height: calc(100dvh - 140px);
+  background: var(--color-bg); touch-action: none; cursor: pointer; outline: none; }
+.game-hint { padding: 10px 16px 12px; font-size: 12px; text-align: center; color: var(--color-muted); }
+@media (max-width: 560px) { .game-canvas { aspect-ratio: 2 / 1; } }
+@media (prefers-reduced-motion: reduce) { .game[open] { animation: none; } }`;
+
   function build() {
+    const style = document.createElement('style');
+    style.textContent = CSS;
+    document.head.appendChild(style);
+
     dialog = document.createElement('dialog');
     dialog.className = 'game';
     dialog.setAttribute('aria-label', 'Rooftop runner');
