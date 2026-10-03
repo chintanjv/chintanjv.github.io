@@ -9,25 +9,46 @@
   const JUMP_V = 380, HOLD_MAX = 0.18;   // take-off speed, max time holding adds height
   const COYOTE = 0.08, BUFFER = 0.1;     // grace windows that make jumps feel fair
   const SPEED_START = 180, SPEED_MAX = 520, SPEED_FLOOR = 144;
-  const RECOVER = 70, TRIP = 0.65;       // after a crate: speed x0.65, then win it back at 70/s²
+  const RECOVER = 70, TRIP = 0.65;       // after a hurdle: speed x0.65, then win it back at 70/s²
   const FLOOR = 200, TOP_MIN = 90, TOP_MAX = 160, DEATH_Y = FLOOR + 30;
   const VIEW_W = 380, VIEW_H = 200;
   const PX = 2, PW = 7 * PX, PH = 12 * PX;     // sprite pixel size, player box
-  const CRATE = 13, UNITS_PER_M = 10;
+  const UNITS_PER_M = 10;
   const BEST_KEY = 'cv-rooftop-best';
+
+  // Difficulty tiers (metres) — each one is announced by the milestone toast of the same distance
+  const HURDLES_AT = 150, BUGS_AT = 500, MAIL_AT = 1000, LEGACY_AT = 2000;
+  const BUG_SPEED = 35, BUG_PATROL = 60;                // crawling bugs
+  const MAIL_SPEED = 70, MAIL_GAP = 6;                  // reply-alls fly in this far above your head
+  const CRUMBLE_DELAY = 0.3, SINK_ACC = 120, SINK_MAX = 70, CRUMBLE_TOP_MAX = 125;   // legacy roofs
 
   const SPRITES = {
     runA: ['..###..', '..###..', '..###..', '...#...', '.#####.', '#.###.#', '..###..', '..###..', '..#.#..', '.#...#.', '.#...#.', '#.....#'],
     runB: ['..###..', '..###..', '..###..', '...#...', '..###..', '.#####.', '..###..', '..###..', '...##..', '...#.#.', '..#..#.', '..#....'],
     jump: ['..###..', '..###..', '..###..', '#..#..#', '.#####.', '..###..', '..###..', '..###..', '.#..#..', '#....#.', '.....#.', '.......'],
+    mail: ['#########', '##+++++##', '#+#+++#+#', '#++#+#++#', '#+++#+++#', '#########'],
   };
-  const LABELS = ['bug', 'meeting', 'scope creep', 'tech debt', 'merge conflict', 'reply-all', 'flaky test', 'P0'];
-  const MILESTONES = [[100, 'MVP'], [250, 'First 10 users'], [500, 'v1.0 shipped'], [1000, 'Product–market fit'],
-                      [2000, 'Series A'], [3500, 'Unicorn'], [5000, 'IPO']];
+  // Hurdle pixel art: '#' accent, '+' light detail (dark while unlit), '*' shown only while lit (P0 siren)
+  const HURDLES = {
+    bug:   { label: 'bug', frames: [
+             ['..#.....#..', '...#...#...', '....###....', '#..#####..#', '.#.##+##.#.', '...##+##...', '.#.##+##.#.', '#..#####..#', '....###....'],
+             ['..#.....#..', '...#...#...', '....###....', '.#.#####.#.', '#..##+##..#', '...##+##...', '#..##+##..#', '.#.#####.#.', '....###....']] },
+    meet:  { label: 'meeting', frames: [['..#...#..', '#########', '#########', '#+++++++#', '#+#+#+#+#', '#+++++++#', '#+#+#+#+#', '#+++++++#', '#########']] },
+    debt:  { label: 'tech debt', frames: [['..######..', '..#....#..', '..#....#..', '##########', '#...##...#', '#...##...#', '#...##...#', '##########']] },
+    merge: { label: 'merge conflict', frames: [['###########', '#.+.....+.#', '#..+...+..#', '#++++.++++#', '#..+...+..#', '#.+.....+.#', '###########', '.....#.....', '.....#.....']] },
+    flaky: { label: 'flaky test', frames: [['..#####..', '...#.#...', '...#.#...', '...#.#...', '..#...#..', '.#.....#.', '#+++++++#', '#+++++++#', '.#######.']] },
+    p0:    { label: 'P0', frames: [['*...*...*', '.*.....*.', '...###...', '..#+++#..', '.#+++++#.', '.#+++++#.', '#########', '#########']] },
+    creep: { label: 'scope creep', frames: [['...#...', '..##.#.', '...###.', '.#.#...', '.###...', '...#.#.', '...###.', '.#.#...', '..###..']] },
+  };
+  const HURDLE_TYPES = Object.keys(HURDLES);
+  const MILESTONES = [[100, 'MVP'], [250, 'First 10 users'], [500, 'v1.0 shipped', 'bugs in prod'],
+                      [1000, 'Product–market fit', 'inbox is exploding'], [2000, 'Series A', 'legacy code ahead'],
+                      [3500, 'Unicorn'], [5000, 'IPO']];
   const QUIPS = {
     fall: ['Fell into the backlog.', 'Scope crept in.', 'Missed the deadline.', 'Shipped to /dev/null.',
            'Needs one more sprint.', 'Rolled back.'],
     wall: ['Hit a wall. Happens to every roadmap.', 'Ran straight into a blocker.'],
+    legacy: ['Legacy code took you down.', 'Nobody knew how that part worked.'],
   };
 
   const rand = (a, b) => a + Math.random() * (b - a);
@@ -37,6 +58,11 @@
   // Keeps climbing the whole run (fast early, gentler later) up to a hard cap
   const targetSpeed = m => Math.min(SPEED_MAX, SPEED_START + 3.8 * Math.sqrt(Math.max(0, m)));
   const milestone = i => MILESTONES[i] || [5000 + 2500 * (i - MILESTONES.length + 1), 'Still shipping'];
+  // How far a legacy roof has sunk t seconds after you land on it
+  const sinkDepth = t => {
+    const u = Math.max(0, t - CRUMBLE_DELAY), tMax = SINK_MAX / SINK_ACC;
+    return u < tMax ? SINK_ACC * u * u / 2 : SINK_ACC * tMax * tMax / 2 + SINK_MAX * (u - tMax);
+  };
 
   /* ---- JUMP ARC: a full-hold jump simulated once with the exact game physics.
      The level generator uses it so every gap is always clearable. ---- */
@@ -52,53 +78,73 @@
 
   /* ---- STATE ---- */
   let state = 'ready';   // ready | running | dying | paused | over
-  let buildings, px, prevPx, y, prevY, vy, speed, onGround, coyote, buffer, jumping, holdT;
-  let held = false, shakeT, animT, toast, mIdx, overT, quip, newBest, shownM;
+  let buildings, mails, px, prevPx, y, prevY, vy, speed, onGround, coyote, buffer, jumping, holdT, lastRoof;
+  let held = false, clock = 0, shakeT, animT, toast, mIdx, overT, quip, newBest, shownM;
   let best = 0;
   try { best = +localStorage.getItem(BEST_KEY) || 0; } catch (_) {}
 
   function reset() {
-    const first = { x: -300, w: 300 + SPEED_START * 3.5, top: 140, seed: 1, crates: [] };
+    const first = { x: -300, w: 300 + SPEED_START * 3.5, top: 140, seed: 1, hurdles: [], vIn: SPEED_START };
     first.vEdge = edgeSpeed(first, SPEED_START);
     buildings = [first];
+    mails = [];
     px = prevPx = 0;
     y = prevY = 140 - PH;
     vy = 0; speed = SPEED_START;
-    onGround = true; coyote = buffer = holdT = 0; jumping = false;
+    onGround = true; coyote = buffer = holdT = 0; jumping = false; lastRoof = first;
     shakeT = animT = overT = 0; toast = null; mIdx = 0; newBest = false; shownM = -1;
     fill();
   }
 
+  /* ---- LEVEL GENERATOR ---- */
+
   // Slowest you can possibly be at this roof's edge: arrive at the slowest possible speed, trip on
-  // every crate, then recover. Speed never drops any other way, so this is a true lower bound.
+  // every hurdle (at the furthest point it can be, which leaves the least runway to recover), then
+  // recover. Speed never drops any other way, so this is a true lower bound.
   function edgeSpeed(b, v) {
     let pos = b.x;
-    const recover = (v, to) => Math.min(targetSpeed(to / UNITS_PER_M), Math.sqrt(v * v + 2 * RECOVER * (to - pos)));
-    for (const c of b.crates) { v = Math.max(SPEED_FLOOR, recover(v, c.x) * TRIP); pos = c.x; }
+    const recover = (v, to) => Math.min(targetSpeed(to / UNITS_PER_M), Math.sqrt(v * v + 2 * RECOVER * Math.max(0, to - pos)));
+    const trips = b.hurdles.map(h => h.x1).concat(b.mailMeet ? [b.mailMeet + 50] : []).sort((a, c) => a - c);
+    for (const x of trips) { v = Math.max(SPEED_FLOOR, recover(v, x) * TRIP); pos = x; }
     return recover(v, b.x + b.w);
+  }
+
+  function makeHurdle(type, x, top, live) {
+    const rows = HURDLES[type].frames[0];
+    const h = rows.length * PX;
+    const o = { type, x, x0: x, x1: x, y: top - h, w: rows[0].length * PX, h, top, live, dir: -1,
+                phase: Math.random() * 4, hit: false, vx: 0, vy: 0, rot: 0 };
+    if (type === 'bug' && live) { o.x1 = x + BUG_PATROL; o.x = rand(x, o.x1); }
+    return o;
   }
 
   function addBuilding() {
     const last = buildings[buildings.length - 1];
-    const end = last.x + last.w;
-    const vt = targetSpeed(end / UNITS_PER_M);
+    const end = last.x + last.w, m = end / UNITS_PER_M;
+    const vt = targetSpeed(m), vIn = last.vEdge;
+    // Take-off height: a legacy roof may have sunk this far by the time the slowest runner leaves it
+    const from = last.top + (last.crumble ? sinkDepth((last.w + PW) / last.vIn + COYOTE) : 0);
+    const lo = Math.max(TOP_MIN, from - APEX * 0.6);
+    const crumble = m >= LEGACY_AT && !last.crumble && lo <= CRUMBLE_TOP_MAX && Math.random() < 0.3;
+    const top = clamp(from + rand(-APEX * 0.6, 55), lo, Math.max(lo, crumble ? CRUMBLE_TOP_MAX : TOP_MAX));
     // Gap is sized for the slowest runner who could reach this edge, so it's always clearable
-    const v = last.vEdge * 0.9;
-    const top = clamp(last.top + rand(-APEX * 0.6, 55), TOP_MIN, TOP_MAX);
-    const gap = v * airTime(top - last.top) * rand(0.45, 1);
-    const w = vt * rand(1.1, 2.6) + 80;
-    const b = { x: end + gap, w, top, seed: Math.random() * 1000, crates: [] };
+    const gap = vIn * 0.9 * airTime(top - from) * rand(0.45, 1);
+    const w = crumble ? vt * rand(0.9, 1.3) + 60 : vt * rand(1.1, 2.6) + 80;
+    const b = { x: end + gap, w, top, seed: Math.random() * 1000, hurdles: [], vIn, crumble };
 
-    // Crates: none in the first stretch, and always leave runway before the next edge
-    if (end > 1500 && w > vt * 1.4 && Math.random() < 0.65) {
-      const n = w > vt * 2.2 ? 2 : 1;
-      const lo = b.x + vt * 0.45, hi = b.x + w - vt * 0.6 - CRATE;
-      for (let i = 0; i < n; i++) {
-        b.crates.push({ x: lo + (hi - lo) * (i + rand(0.15, 0.85)) / n, y: top - CRATE,
-                        label: pick(LABELS), hit: false, vx: 0, vy: 0, rot: 0 });
+    if (!crumble) {
+      // Hurdles: none in the first stretch, and always leave runway before the next edge
+      const hlo = b.x + vt * 0.45, hhi = b.x + w - vt * 0.6 - 24 - BUG_PATROL;
+      if (m >= HURDLES_AT && w > vt * 1.4 && hhi > hlo && Math.random() < 0.65) {
+        const n = w > vt * 2.2 ? 2 : 1;
+        for (let i = 0; i < n; i++) {
+          b.hurdles.push(makeHurdle(pick(HURDLE_TYPES), hlo + (hhi - hlo) * (i + rand(0.15, 0.85)) / n, top, m >= BUGS_AT));
+        }
       }
+      // A reply-all will fly in to meet you around here (spawned in update())
+      if (m >= MAIL_AT && w > vt * 2 && Math.random() < 0.45) b.mailMeet = b.x + w * rand(0.3, 0.5);
     }
-    b.vEdge = edgeSpeed(b, last.vEdge);
+    b.vEdge = edgeSpeed(b, vIn);
     buildings.push(b);
   }
 
@@ -112,12 +158,20 @@
 
   /* ---- PHYSICS (one fixed step) ---- */
   function update(dt) {
+    clock += dt;
     if (state === 'over') { overT += dt; return; }
-    if (toast) { toast.t += dt; if (toast.t > 1.8) toast = null; }
+    if (toast) { toast.t += dt; if (toast.t > toast.life) toast = null; }
     if (state !== 'running' && state !== 'dying') return;
 
     prevPx = px; prevY = y;
     shakeT = Math.max(0, shakeT - dt);
+
+    // Legacy roofs sink once you've landed on them
+    for (const b of buildings) {
+      if (!b.sinking || b.top > FLOOR + 60) continue;
+      b.sinkT += dt;
+      if (b.sinkT > CRUMBLE_DELAY) { b.sv = Math.min(SINK_MAX, b.sv + SINK_ACC * dt); b.top += b.sv * dt; }
+    }
 
     // Horizontal: auto-run, ramping toward the distance-based target speed
     if (state === 'running') speed = Math.min(targetSpeed(px / UNITS_PER_M), speed + RECOVER * dt);
@@ -151,39 +205,80 @@
       if (jumping) holdT += dt;
     }
 
-    // Ground contact
+    // Ground contact (riding the roof down if it's sinking)
     if (onGround) {
-      if (!supportAt(px)) { onGround = false; coyote = COYOTE; }
+      const b = supportAt(px);
+      if (!b) { onGround = false; coyote = COYOTE; }
+      else y = b.top - PH;
     } else if (vy >= 0) {
       const b = supportAt(px);
-      if (b && prevY + PH <= b.top + 0.01 && y + PH >= b.top) { y = b.top - PH; vy = 0; onGround = true; }
-    }
-
-    // Crates trip you up (Canabalt-style) and go flying
-    for (const b of buildings) {
-      for (const c of b.crates) {
-        if (c.hit) { c.vy += G * dt; c.x += c.vx * dt; c.y += c.vy * dt; c.rot += 9 * dt; continue; }
-        if (state === 'running' && px + PW > c.x && px < c.x + CRATE && y + PH > c.y && y < c.y + CRATE) {
-          c.hit = true; c.vx = speed * 0.6 + 40; c.vy = -170;
-          speed = Math.max(SPEED_FLOOR, speed * TRIP);
-          shake(0.15);
-        }
+      if (b && prevY + PH <= b.top + 0.01 && y + PH >= b.top) {
+        y = b.top - PH; vy = 0; onGround = true; lastRoof = b;
+        if (b.crumble && !b.sinking) { b.sinking = true; b.sinkT = b.sv = 0; shake(0.1); }
       }
     }
 
+    // Hurdles trip you up (Canabalt-style) and go flying
+    for (const b of buildings) for (const h of b.hurdles) updateHurdle(h, dt);
+
+    // Reply-alls: launched from just off-screen so they meet you mid-roof
+    for (const b of buildings) {
+      if (!b.mailMeet || b.mailSent || state !== 'running') continue;
+      const lead = viewW * 0.78 + 20;
+      if (px + lead * speed / (speed + MAIL_SPEED) >= b.mailMeet) {
+        b.mailSent = true;
+        const base = b.top - PH - MAIL_GAP - 6 * PX;
+        mails.push({ x: px + lead, y: base, base, w: 9 * PX, h: 6 * PX, t: 0, hit: false, vx: 0, vy: 0, rot: 0 });
+      }
+    }
+    for (const e of mails) {
+      if (e.hit) { tumble(e, dt); continue; }
+      e.t += dt;
+      e.x -= MAIL_SPEED * dt;
+      e.y = e.base + Math.sin(e.t * 5) * 2;
+      if (state === 'running' && hits(e)) trip(e);
+    }
+    mails = mails.filter(e => e.x > px - viewW && e.y < FLOOR + 40);
+
     // Milestones + score
     const m = Math.floor(px / UNITS_PER_M);
-    if (state === 'running' && m >= milestone(mIdx)[0]) { toast = { text: milestone(mIdx)[1], t: 0 }; mIdx++; }
+    if (state === 'running' && m >= milestone(mIdx)[0]) {
+      const [, text, sub] = milestone(mIdx++);
+      toast = { text, sub, t: 0, life: sub ? 2.6 : 1.8 };
+    }
     if (m !== shownM && m >= 0) { shownM = m; ui.score.textContent = m + 'm'; }
 
     if (y > DEATH_Y) gameOver();
     fill();
   }
 
+  function updateHurdle(h, dt) {
+    if (h.hit) { tumble(h, dt); return; }
+    if (h.type === 'bug' && h.live) {
+      h.x += h.dir * BUG_SPEED * dt;
+      if (h.x <= h.x0) { h.x = h.x0; h.dir = 1; } else if (h.x >= h.x1) { h.x = h.x1; h.dir = -1; }
+    }
+    if (h.type === 'creep') {   // grows as you get close
+      const rows = h.live ? clamp(Math.round(3 + 6 * (170 - (h.x - px - PW)) / 140), 3, 9) : 6;
+      h.h = rows * PX; h.y = h.top - h.h;
+    }
+    if (state === 'running' && hits(h)) trip(h);
+  }
+
+  const hits = o => px + PW > o.x + 1 && px < o.x + o.w - 1 && y + PH > o.y + 1 && y < o.y + o.h;
+
+  function trip(o) {
+    o.hit = true; o.vx = speed * 0.6 + 40; o.vy = -170;
+    speed = Math.max(SPEED_FLOOR, speed * TRIP);
+    shake(0.15);
+  }
+
+  function tumble(o, dt) { o.vy += G * dt; o.x += o.vx * dt; o.y += o.vy * dt; o.rot += 9 * dt; }
+
   function shake(t) { if (!reducedMotion.matches) shakeT = t; }
 
   function gameOver() {
-    if (state === 'running') quip = pick(QUIPS.fall);
+    if (state === 'running') quip = pick(lastRoof && lastRoof.crumble ? QUIPS.legacy : QUIPS.fall);
     state = 'over'; overT = 0;
     prevPx = px; prevY = y;
     const m = Math.max(0, Math.floor(px / UNITS_PER_M));
@@ -222,6 +317,43 @@
     ctx.fillText(str, x * dpr, y * dpr);
   }
 
+  // Small muted caption at a world position (hurdle labels)
+  function label(str, wx, wy) {
+    text(str, (wx - camX) * s / dpr, (wy - viewTop) * s / dpr, Math.max(10, 9 * s / dpr), C.muted);
+  }
+
+  // Pixel sprite at a world position. `from` skips top rows (growing vines); `rot` tumbles it.
+  function sprite(rows, x, y, { flip = false, rot = 0, lit = true, from = 0 } = {}) {
+    const cols = rows[0].length, w = cols * PX, h = (rows.length - from) * PX;
+    if (rot) {
+      ctx.save();
+      ctx.translate((x + w / 2 - camX) * s, (y + h / 2 - viewTop) * s);
+      ctx.rotate(rot);
+    }
+    for (let r = from; r < rows.length; r++) {
+      for (let c = 0; c < cols; c++) {
+        const ch = rows[r][flip ? cols - 1 - c : c];
+        if (ch === '.' || (ch === '*' && !lit)) continue;
+        ctx.fillStyle = ch === '#' ? C.accent : lit ? C.player : C.bg;
+        if (rot) ctx.fillRect((c * PX - w / 2) * s, ((r - from) * PX - h / 2) * s, PX * s, PX * s);
+        else rect(x + c * PX, y + (r - from) * PX, PX, PX);
+      }
+    }
+    if (rot) ctx.restore();
+  }
+
+  function drawHurdle(h) {
+    if (h.x > camX + viewW || h.x + h.w < camX || h.y > FLOOR) return;
+    const def = HURDLES[h.type];
+    if (h.type === 'flaky' && h.live && !h.hit && Math.floor(clock * 7 + h.phase) % 4 === 0) return;   // flickers
+    const rows = def.frames[h.type === 'bug' && h.live ? Math.floor(clock * 8) % 2 : 0];
+    sprite(rows, h.x, h.y, {
+      flip: h.dir > 0, rot: h.hit ? h.rot : 0, from: rows.length - h.h / PX,
+      lit: h.type !== 'p0' || Math.floor(clock * 4 + h.phase) % 2 === 0,
+    });
+    if (!h.hit) label(def.label, h.x + h.w / 2, h.y - 5);
+  }
+
   function render(alpha) {
     const ix = prevPx + (px - prevPx) * alpha;
     const iy = prevY + (y - prevY) * alpha;
@@ -241,7 +373,7 @@
 
     // Buildings, windows, roof edges
     for (const b of buildings) {
-      if (b.x > camX + viewW || b.x + b.w < camX) continue;
+      if (b.x > camX + viewW || b.x + b.w < camX || b.top > FLOOR) continue;
       ctx.fillStyle = C.building;
       rect(b.x, b.top, b.w, FLOOR - b.top + 2);
       ctx.fillStyle = C.window;
@@ -255,28 +387,31 @@
       }
       ctx.globalAlpha = 1;
       ctx.fillStyle = C.edge;
-      rect(b.x, b.top, b.w, 1.2);
+      if (b.crumble) {
+        // Legacy roof: broken edge, cracks down the facade, a faint sign
+        for (let x = b.x; x < b.x + b.w; x += 12) rect(x, b.top, Math.min(8, b.x + b.w - x), 1.2);
+        ctx.fillStyle = C.bg;
+        for (let k = 1; k <= 3; k++) {
+          const cx = b.x + b.w * k / 4 + (hash(b.seed + k) - 0.5) * 30;
+          rect(cx, b.top + 1, 2, 7); rect(cx + 2, b.top + 7, 2, 7); rect(cx, b.top + 13, 2, 6);
+        }
+        ctx.globalAlpha = 0.8;
+        label('legacy', b.x + b.w / 2, b.top + 34);
+        ctx.globalAlpha = 1;
+      } else {
+        rect(b.x, b.top, b.w, 1.2);
+      }
     }
 
-    // Crates + their labels
-    for (const b of buildings) {
-      for (const c of b.crates) {
-        if (c.x > camX + viewW || c.x + CRATE < camX || c.y > FLOOR) continue;
-        ctx.fillStyle = C.accent;
-        if (c.hit) {
-          ctx.save();
-          ctx.translate((c.x + CRATE / 2 - camX) * s, (c.y + CRATE / 2 - viewTop) * s);
-          ctx.rotate(c.rot);
-          ctx.fillRect(-CRATE / 2 * s, -CRATE / 2 * s, CRATE * s, CRATE * s);
-          ctx.restore();
-        } else {
-          rect(c.x, c.y, CRATE, CRATE);
-          ctx.fillStyle = C.bg;
-          rect(c.x + 2, c.y + 2, CRATE - 4, CRATE - 4);
-          ctx.fillStyle = C.accent;
-          rect(c.x + 4, c.y + 4, CRATE - 8, CRATE - 8);
-          text(c.label, (c.x + CRATE / 2 - camX) * s / dpr, (c.y - 5 - viewTop) * s / dpr, Math.max(10, 9 * s / dpr), C.muted);
-        }
+    // Hurdles and reply-alls, with their labels
+    for (const b of buildings) for (const h of b.hurdles) drawHurdle(h);
+    for (const e of mails) {
+      if (e.x > camX + viewW || e.x + e.w < camX) continue;
+      sprite(SPRITES.mail, e.x, e.y, { rot: e.hit ? e.rot : 0 });
+      if (!e.hit) {
+        ctx.fillStyle = C.muted;   // speed lines
+        rect(e.x + e.w + 3, e.y + 3, 5, 1); rect(e.x + e.w + 5, e.y + 6, 4, 1);
+        label('reply-all', e.x + e.w / 2, e.y - 5);
       }
     }
 
@@ -289,10 +424,12 @@
       for (let c = 0; c < 7; c++) if (frame[r][c] === '#') rect(ix + c * PX, iy + r * PX, PX, PX);
     }
 
-    // Milestone toast
+    // Milestone toast (with a second line when it unlocks something new)
     if (toast) {
-      ctx.globalAlpha = toast.t < 0.2 ? toast.t / 0.2 : toast.t > 1.4 ? Math.max(0, (1.8 - toast.t) / 0.4) : 1;
+      const fadeOut = toast.life - 0.4;
+      ctx.globalAlpha = toast.t < 0.2 ? toast.t / 0.2 : toast.t > fadeOut ? Math.max(0, (toast.life - toast.t) / 0.4) : 1;
       text(toast.text, cssW / 2, 34, 16, C.accent);
+      if (toast.sub) text(toast.sub, cssW / 2, 54, 12, C.secondary);
       ctx.globalAlpha = 1;
     }
 
