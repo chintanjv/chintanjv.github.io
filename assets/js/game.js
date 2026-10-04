@@ -23,10 +23,26 @@
   const CRUMBLE_DELAY = 0.3, SINK_ACC = 120, SINK_MAX = 70, CRUMBLE_TOP_MAX = 125;   // legacy roofs
 
   const SPRITES = {
-    runA: ['..###..', '..###..', '..###..', '...#...', '.#####.', '#.###.#', '..###..', '..###..', '..#.#..', '.#...#.', '.#...#.', '#.....#'],
-    runB: ['..###..', '..###..', '..###..', '...#...', '..###..', '.#####.', '..###..', '..###..', '...##..', '...#.#.', '..#..#.', '..#....'],
-    jump: ['..###..', '..###..', '..###..', '#..#..#', '.#####.', '..###..', '..###..', '..###..', '.#..#..', '#....#.', '.....#.', '.......'],
     mail: ['#########', '##+++++##', '#+#+++#+#', '#++#+#++#', '#+++#+++#', '#########'],
+  };
+  // Runner (9x13, facing right, '+' = light). Hitbox = columns 1-7, rows 1-12 (row 0 only when the body rises
+  // mid-stride). run: one full stride (contact → down → passing → up, for each leg).
+  const RUNNER = {
+    run: [
+      ['.........', '....+++..', '....+++..', '....+++..', '.....+...', '....++..+', '...+++++.', '..+.++...', '....++...', '...+..+..', '...+..+..', '..+....+.', '..+....+.'],
+      ['.........', '.........', '....+++..', '....+++..', '....+++..', '.....+...', '....++.+.', '..+++++..', '....++...', '..+.++...', '..++..+..', '...+.+...', '.....+...'],
+      ['.........', '....+++..', '....+++..', '....+++..', '.....+...', '....++...', '....++...', '....++...', '...++++..', '....++...', '....+.+..', '....++...', '....+....'],
+      ['....+++..', '....+++..', '....+++..', '.....+...', '....++.+.', '...++++..', '..+.++...', '....++...', '....+.++.', '...+...+.', '..+....+.', '..+......', '.........'],
+      ['.........', '....+++..', '....+++..', '....+++..', '.....+...', '....++..+', '...+++++.', '..+.++...', '....++...', '....++...', '...+..+..', '..+....+.', '..+....+.'],
+      ['.........', '.........', '....+++..', '....+++..', '....+++..', '.....+...', '....++.+.', '..+++++..', '....++...', '..+.++...', '..+.+++..', '...+.+...', '.....+...'],
+      ['.........', '....+++..', '....+++..', '....+++..', '.....+...', '....++...', '....++...', '....++...', '...++++..', '....+.+..', '....+.+..', '....++...', '....+....'],
+      ['....+++..', '....+++..', '....+++..', '.....+...', '....++.+.', '...++++..', '..+.++...', '....++...', '...+..++.', '...+...+.', '..+....+.', '..+......', '.........'],
+    ],
+    jump:    ['....+++..', '....+++..', '....+++..', '.....+..+', '..++++++.', '.+..++...', '....++...', '....++...', '....+.++.', '....+.+..', '...+..+..', '.........', '.........'],
+    fall:    ['.........', '....+++..', '....+++..', '....+++..', '.+...+..+', '..++++++.', '....++...', '....++...', '....++...', '....+.+..', '....+.+..', '...+...+.', '.........'],
+    land:    ['.........', '.........', '.........', '....+++..', '....+++..', '....+++..', '.....+...', '....++...', '..++++++.', '.+..++..+', '....++...', '..++..++.', '...+..+..'],
+    stumble: ['.........', '...++++..', '+..++++..', '+..++++..', '.++.++...', '...++....', '...++....', '...++....', '...++....', '...+.+...', '...+..+..', '..+....+.', '..+....+.'],
+    idle:    ['.........', '....+++..', '....+++..', '....+++..', '.....+...', '....++...', '...++++..', '..+.++.+.', '..+.++.+.', '....++...', '....++...', '...+..+..', '...+..+..'],
   };
   // Hurdle pixel art: '#' accent, '+' light detail (dark while unlit), '*' shown only while lit (P0 siren)
   const HURDLES = {
@@ -79,7 +95,7 @@
   /* ---- STATE ---- */
   let state = 'ready';   // ready | running | dying | paused | over
   let buildings, mails, px, prevPx, y, prevY, vy, speed, onGround, coyote, buffer, jumping, holdT, lastRoof;
-  let held = false, clock = 0, shakeT, animT, toast, mIdx, overT, quip, newBest, shownM;
+  let held = false, clock = 0, shakeT, animT, landT, stumbleT, toast, mIdx, overT, quip, newBest, shownM;
   let best = 0;
   try { best = +localStorage.getItem(BEST_KEY) || 0; } catch (_) {}
 
@@ -93,7 +109,7 @@
     y = prevY = 140 - PH;
     vy = 0; speed = SPEED_START;
     onGround = true; coyote = buffer = holdT = 0; jumping = false; lastRoof = first;
-    shakeT = animT = overT = 0; toast = null; mIdx = 0; newBest = false; shownM = -1;
+    shakeT = animT = landT = stumbleT = overT = 0; toast = null; mIdx = 0; newBest = false; shownM = -1;
     fill();
   }
 
@@ -177,6 +193,8 @@
 
     prevPx = px; prevY = y;
     shakeT = Math.max(0, shakeT - dt);
+    landT = Math.max(0, landT - dt);
+    stumbleT = Math.max(0, stumbleT - dt);
 
     // Legacy roofs sink once you've landed on them
     for (const b of buildings) {
@@ -189,7 +207,7 @@
     if (state === 'running') speed = Math.min(targetSpeed(px / UNITS_PER_M), speed + RECOVER * dt);
     const oldRight = px + PW;
     px += speed * dt;
-    animT += speed * dt;
+    animT += speed * dt / (10 + speed * 0.02);   // run-cycle phase, in frames
 
     // Ran into the side of a taller building
     if (state === 'running') {
@@ -225,7 +243,7 @@
     } else if (vy >= 0) {
       const b = supportAt(px);
       if (b && prevY + PH <= b.top + 0.01 && y + PH >= b.top) {
-        y = b.top - PH; vy = 0; onGround = true; lastRoof = b;
+        y = b.top - PH; vy = 0; onGround = true; lastRoof = b; landT = 0.08;
         if (b.crumble && !b.sinking) { b.sinking = true; b.sinkT = b.sv = 0; shake(0.1); }
       }
     }
@@ -280,6 +298,7 @@
   const hits = o => px + PW > o.x + 1 && px < o.x + o.w - 1 && y + PH > o.y + 1 && y < o.y + o.h;
 
   function trip(o) {
+    stumbleT = 0.2;
     o.hit = true; o.vx = speed * 0.6 + 40; o.vy = -170;
     speed = Math.max(SPEED_FLOOR, speed * TRIP);
     shake(0.15);
@@ -435,13 +454,13 @@
     }
 
     // Runner
-    const pose = !onGround && state !== 'ready' ? SPRITES.jump
-                : state === 'running' ? (Math.floor(animT / 14) % 2 ? SPRITES.runA : SPRITES.runB)
-                : SPRITES.runB;
-    ctx.fillStyle = C.player;
-    for (let r = 0; r < pose.length; r++) {
-      for (let c = 0; c < 7; c++) if (pose[r][c] === '#') rect(ix + c * PX, iy + r * PX, PX, PX);
-    }
+    const pose = state === 'ready' ? RUNNER.idle
+               : stumbleT > 0 ? RUNNER.stumble
+               : !onGround ? (vy < 0 ? RUNNER.jump : RUNNER.fall)
+               : landT > 0 ? RUNNER.land
+               : state === 'running' ? RUNNER.run[Math.floor(animT) % RUNNER.run.length]
+               : RUNNER.idle;
+    sprite(pose, ix - PX, iy - PX);
 
     // Milestone toast (with a second line when it unlocks something new)
     if (toast) {
