@@ -1,7 +1,7 @@
 [
   {
     "title": "Resume Match Score",
-    "summary": "A free tool that scores your resume against any job posting and shows the exact fixes that would raise it. Runs entirely in the browser with a rule-based scoring engine, so there's no signup and your resume never leaves your device.",
+    "summary": "A free resume vs job match scoring tool that shows the exact areas whwre the resume needs fixing. Runs entirely in the browser with a rule-based scoring engine, with no signup or paywall.",
     "link": "https://chintanjv.github.io/resume-match-score/"
   },
   {
