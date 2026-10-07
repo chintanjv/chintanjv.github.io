@@ -1,5 +1,10 @@
 [
   {
+    "title": "Resume Match Score",
+    "summary": "A free tool that scores your resume against any job posting and shows the exact fixes that would raise it. Runs entirely in the browser with a rule-based scoring engine, so there's no signup and your resume never leaves your device.",
+    "link": "https://chintanjv.github.io/resume-match-score/"
+  },
+  {
     "title": "Incidents.fyi",
     "summary": "A location-based platform for reporting and browsing incidents happening in your neighborhood. Think levels.fyi, but for real-world local incidents instead of comp data.",
     "link": "https://incidents-fyi.vercel.app/"
