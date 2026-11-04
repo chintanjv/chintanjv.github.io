@@ -1,5 +1,10 @@
 [
   {
+    "title": "PM Interview Skills",
+    "summary": "Five free, open-source Claude skills for landing a PM job. Get model answers, scored practice and mock interviews for product sense, metrics and execution questions, plus resume bullets tailored to any job posting.",
+    "link": "https://github.com/chintanjv/pm-interview-skills"
+  },
+  {
     "title": "Resume Match Score",
     "summary": "A free resume vs job match scoring tool that shows the exact areas whwre the resume needs fixing. Runs entirely in the browser with a rule-based scoring engine, with no signup or paywall.",
     "link": "https://chintanjv.github.io/resume-match-score/"
